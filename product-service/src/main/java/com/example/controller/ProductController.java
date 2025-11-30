@@ -2,7 +2,9 @@ package com.example.controller;
 
 import com.example.service.ProductService;
 import com.example.service.PublicService;
+import exception.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -75,8 +77,7 @@ public class ProductController {
 
     // Endpoint for admin
     @GetMapping("/admin")
-    @RequestIntercepter
-    public ResponseEntity<Map<String, Object>> getProductsForAdmin(
+    public ResponseEntity<ApiResponse<?>> getProductsForAdmin(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Boolean wholesaleOnly,
             @RequestParam(required = false) String search,
@@ -84,16 +85,28 @@ public class ProductController {
             @RequestParam(defaultValue = "10") Integer itemPerPage,
             @RequestParam(defaultValue = "1") Integer pageNumber
     ) {
-        if (hasAccess()) {
-             return productService.getProductsForAdmin(category, wholesaleOnly, search, tagList,itemPerPage, pageNumber);
-        } else {
-            Map<String, Object> errorRes = new HashMap<>();
-            errorRes.put("status", false);
-            errorRes.put("message", "Only admin access");
-            return ResponseEntity.ok(errorRes);
+
+        if (!hasAccess()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.builder()
+                            .status(false)
+                            .message("Only admin access")
+                            .build());
         }
 
+        Map<String, Object> data = productService.getProductsForAdmin(
+                category, wholesaleOnly, search, tagList, itemPerPage, pageNumber);
+
+        return ResponseEntity.ok(
+                ApiResponse.builder()
+                        .status(true)
+                        .message("Products fetched successfully")
+                        .data(data.get("items"))
+                        .totalItems((Long) data.get("totalItems"))
+                        .build()
+        );
     }
+
 
 
     @GetMapping("/public/category-list")

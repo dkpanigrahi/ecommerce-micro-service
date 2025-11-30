@@ -274,19 +274,13 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity<Map<String, Object>> getProductsForAdmin(String category, Boolean wholesaleOnly, String search, List<String> tagList,Integer itemPerPage, Integer pageNumber) {
-        try{
-            Map<String, Object> response = productCriteriaRepository.getProductsForAdmin(category, wholesaleOnly, search, tagList, itemPerPage, pageNumber);
-            response.put("status",true);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Map<String, Object> errorRes = new HashMap<>();
-            errorRes.put("status", false);
-            errorRes.put("message", e.getMessage());
-            return ResponseEntity.internalServerError().body(errorRes);
-        }
+    public Map<String, Object> getProductsForAdmin(
+            String category, Boolean wholesaleOnly, String search,
+            List<String> tagList, Integer itemPerPage, Integer pageNumber) {
+        return productCriteriaRepository.getProductsForAdmin(
+                category, wholesaleOnly, search, tagList, itemPerPage, pageNumber);
     }
+
 
 
 
